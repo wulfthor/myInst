@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='stylesheets/dist/css/bootstrap.css' />
+  </head>
+  <body>
+
+    <div id="page" class="container">
+      <h1><%= title %></h1>
+
+      <form class="form-horizontal" action = "/" method = "POST">
+        <% for (var i = 0; i < length; i++) { %>
+
+        <div class="row">
+
+          <div class="col-xm-6 col-sm-6 col-md-6 col-lg-6">
+            <a href="<%= data[i].fullPath %>"><img src="<%= data[i].fullPath %>" width="300" class="media-object"></a>
+          </div>
+
+          <div class="col-xm-6 col-sm-6 col-md-6 col-lg-6">
+            <div class="jumbotron">
+              <p>Original: <%= data[i].origFile %></p>
+              <p name="katnr">KatalogNr: <%= data[i].katNr %></p>
+              <p name="invnr">InventarNr: <%= data[i].invNr %></p>
+              <input type = "hidden" id="invnr_<%= data[i].invNr %>" name ="invNr[]" value="<%= data[i].invNr %>">
+              <input type = "hidden" id="fullpath_<%= data[i].invNr %>" name ="fullPath[]" value="<%= data[i].fullPath %>">
+            </div>
+
+            <div class="form-group">
+              <div class="input-group input-group-md">
+                <span class="input-group-addon">Color</span>
+                <input type="text" class="form-control" placeholder="Farveinfo" id="color_<%= data[i].invNr %>" name ="color[]" value="<%= data[i].color %>"> 
+              </div>
+              <div class="input-group input-group-md">
+                <span class="input-group-addon">&nbsp;&nbsp;Size</span>
+                <input type="text" class="form-control" placeholder="Size" id="size_<%= data[i].invNr %>" name = "size[]" value="<%= data[i].size %>"  > 
+              </div> 
+            </div>
+
+          </div>
+
+        </div>
+        <hr>
+        <% } %>
+        <button type="submit" class="btn btn-warning btn-lg" value = "Submit">Gem</button>
+      </form>
+    </div>
+    <script src="/javascripts/jquery.js"></script>
+    <script src="/stylesheets/dist/js/bootstrap.js"></script>
+  </body>
+</html>

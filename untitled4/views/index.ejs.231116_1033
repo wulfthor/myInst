@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='stylesheets/dist/css/bootstrap.css' />
+
+</head>
+  <body>
+  <div id="page" class="container">
+      <h1><%= title %></h1>
+      <form action = "/" method = "POST">
+        <div class="form-group">
+      <% for (var i = 0; i < length; i++) { %>
+      <div class="row">
+        <div class="col-md-4"><a href="<%= data[i].fullPath %>"><img src="<%= data[i].fullPath %>" width="200" class="media-object"></a></div>
+
+          <div class="col-md-8"><i class="fa fa-certificate"></i>
+
+          <span>Original: <%= data[i].origFile %></span>
+          <br>
+          <span name="katnr">KatalogNr: <%= data[i].katNr %></span>
+              <br>
+              <span name="invnr">InventarNr: <%= data[i].invNr %></span>
+              <br>
+          <span>FullP: <%= data[i].fullPath %></span>
+              <br>
+          <span>Test: <%= data[i].test %></span>
+              <br>
+              <input type = "hidden" id="invnr_<%= data[i].invNr %>" name ="invnr" value="<%= data[i].invNr %>">
+              <input type = "hidden" id="fullpath_<%= data[i].invNr %>" name ="fullpath" value="<%= data[i].fullPath %>">
+          <span>Comment: <%= data[i].comment %></span>
+              <br>
+          <span>Color</span>
+          <input type = "text" id="color_<%= data[i].invNr %>" name ="color_<%= data[i].invNr %>" value="Viggo <%= data[i].invNr %>"> 
+          <br>
+                   <span> Size</span>
+                   <input type = "text" id="size_<%= data[i].invNr %>" name = "size_<%= data[i].invNr %>" value="Otto <%= data[i].invNr %>"  > </div> </div>
+            <hr>
+          <% } %>
+          <input type = "submit" value = "Submit">
+        </div>
+        </form>
+
+      </div>
+  </div>
+<script src="/javascripts/jquery.js"></script>
+<script src="/stylesheets/dist/js/bootstrap.js"></script>
+  </body>
+</html>

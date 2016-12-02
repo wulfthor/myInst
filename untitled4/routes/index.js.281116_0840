@@ -1,0 +1,261 @@
+var express = require('express');
+var router = express.Router();
+var piexif = require("piexifjs");
+var fs = require('fs');
+var async = require('async');
+var glob = require('glob');
+var Image = require('../models/image');
+//var MongoClient = require('mongodb').MongoClient
+
+
+//var url = 'mongodb://localhost:27017/drawings'
+/* GET home page. */
+// 43_GB 408_3@KKSgb8408 verso.jpg
+router.get('/', function(req, res, next) {
+            var myexifdata = {};
+            var myexifLensdata = {};
+
+    glob('public/data/testimages/*', function (err,mdata) {
+        if (err)
+            res.send(err)
+        else {
+            //console.log(mdata);
+            var data = {};
+            data = mdata;
+
+            data.forEach(function(val,index) {
+                console.log("M: " + JSON.stringify(myexifdata));
+                console.log("V " + val);
+                console.log("I " + index);
+                data[index] = val.replace(/public/g,'');
+
+                var tmpP = val.replace(/\/data\/images\//g,'');
+                tmp = tmpP.split('@')[1]
+                //console.log("T: " + tmpP);
+                var tmpKatnr = tmpP.split('@')[0];
+                tmp = tmpKatnr.split('_');
+                tmp = tmp[(tmp.length - 2)];
+                tmp = tmp.replace(" ","");
+                console.log("TEMP " + tmp);
+                /*
+                var jpeg = fs.readFileSync(val);
+                var exifdata = jpeg.toString("binary");
+                var exifObj = piexif.load(exifdata);
+                console.log("UC: " + JSON.stringify(exifObj['Exif']['37510']));
+                console.log("ID: " + JSON.stringify(exifObj['Exif']['42036']));
+
+                if (typeof JSON.stringify(exifObj['Exif']['37510'])!== 'undefined'){
+                  var tmpStr = JSON.stringify(exifObj['Exif']['37510']);
+                  tmpStr = tmpStr.substring('ASCII\\u0000\\u0000\\u00000'.length);
+                  tmpStr = tmpStr.replace('"','');
+                  myexifdata[tmp]=tmpStr;
+                  }
+                if (typeof JSON.stringify(exifObj['Exif']['42036'])!== 'undefined'){
+                  myexifLensdata[tmp]=JSON.stringify(exifObj['Exif']['42036']);
+                  }
+
+                  /*
+                for (var ifd in exifObj) {
+                  if (ifd == "thumbnail") {
+                    continue;
+                  }
+                  console.log("-" + ifd);
+                  for (var tag in exifObj[ifd]) {
+                    console.log("  " + piexif.TAGS[ifd][tag]["name"] + ":" + exifObj[ifd][tag]);
+                  }
+                }
+                */
+
+            });
+
+            //console.log("M: " + JSON.stringify(myexifdata));
+            //console.log("L: " + JSON.stringify(myexifLensdata));
+
+
+            data.sort(compare);
+
+
+            var obj = data.reduce(function(o, v, i) {
+                var tmpO = {};
+                tmpO.fullPath = v;
+                var tmpP = v.replace(/\/data\/testimages\//g,'');
+                tmp = tmpP.split('@')[1]
+                //console.log("T: " + tmpP);
+                var tmpKatnr = tmpP.split('@')[0];
+                tmpO.origFile = tmp.replace(/\.jpg/, '');
+                tmp = tmpKatnr.split('_');
+                console.log("T " + tmp);
+                var tmpinvNr = tmp[(tmp.length - 2)];
+                tmpinvNr = tmpinvNr.replace(" ","");
+                tmpO.invNr = tmpinvNr;
+                //tmpO.test = myexifdata[tmpinvNr];
+                //tmpO.comment = myexifLensdata[tmpinvNr];
+                //tmpO.katNr = tmpO.origFile.includes('erso')? tmp[0] + "verso" : tmp[0];
+                if ( v.indexOf('erso')!= -1) {
+                  tmpO.katNr = tmp[0] + " verso"; 
+                } else {
+                  tmpO.katNr = tmp[0]; 
+                }
+                o[i]= tmpO;
+                //console.log("V " + v);
+                //console.log(i);
+                return o;
+            }, {});
+
+            //console.log("V");
+            //console.log(obj);
+            //console.log("XX");
+
+
+            res.render('index', {
+                title: 'Venetianske tegninger',
+                length: data.length,
+                data: obj
+            });
+        }
+    });
+    function compare(a,b) {
+
+        var tmpA = a.replace('/data/images/', '');
+        var tmpB = b.replace('/data/images/', '');
+        tmpA = parseInt(tmpA.split('_')[0]);
+        tmpB = parseInt(tmpB.split('_')[0]);
+        //console.log("A: " + tmpA);
+        //console.log("B: " + tmpB);
+        if (tmpA < tmpB)
+            return -1;
+        if (tmpA >= tmpB)
+            return 1;
+    }
+})
+router.post('/', function(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  /*
+   *
+   * { color_GB9589: '',
+   *   sizeGB9589: '',
+   *     color_GB6716: 'asdf',
+   *       sizeGB6716: 'sadf',
+   *         color_GB8485: '',
+   *           sizeGB8485: '',
+   *             color_GB8490: [ '', '' ],
+   *               sizeGB8490: [ '', '' ],
+   *                 color_GB6715: '',
+   *                   sizeGB6715: '',
+   *                     color_GB8439: '',
+   *                       sizeGB8439: 'Viggo' }
+   */
+  //console.log("------V-------");
+  //console.log(req.body);
+  //console.log("II: " + (req.body.invnr.length));
+  //console.log("------A-------");
+
+  var myArr = [];
+  var counter = 0;
+  var steps = 3;
+
+  
+  var JSONObj = { };
+  var invArr=[];
+  var main = []
+
+  for(var i = 0;i<req.body.invnr.length;i++){
+   var obj ={
+   _id:req.body.invnr[i],
+   invnr:req.body.invnr[i],
+   fullpath:req.body.fullpath[i],
+   color:req.body.color[i],
+   size:req.body.size[i]
+  }
+   main.push(obj);
+  }
+
+  console.log("------V-------");
+  //console.log(JSON.stringify(main))
+  console.log((main));
+  console.log("------V-------");
+
+  console.log("im cr");
+  /*
+  Image.insertMany(main).then(function(err,docs) {
+    console.log(docs);
+  })
+  .catch(function(err) {
+    console.log(err);
+  });
+  */
+
+  var bulk = Image.collection.initializeOrderedBulkOp();
+  bulk.find({}).update(main);
+  bulk.execute(function (error, docs) {
+    console.log("in cb");
+    console.log(error);
+    console.log(docs);
+    callback();
+  });
+  /*
+
+    console.log("into loop");
+    console.log(obj.invnr);
+    var image = new Image(obj);
+    Image.create(image, { upsert:true }, function(err, doc){
+      if (err) {
+        console.log(err);
+      }
+      console.log(doc);
+    });
+    */
+    /*
+  main.forEach(function(obj) {
+    console.log("into loop");
+    console.log(obj.invnr);
+    var image = new Image(obj);
+    Image.findOneAndUpdate({_id:obj.invnr},obj, { upsert:true }, function(err, doc){
+      if (err) {
+        console.log(err);
+      }
+      console.log(doc);
+    });
+    /*
+    Image.find({_id:obj.invnr}, function(err,docs) {
+      console.log("------X-------");
+      console.log(docs);
+      console.log("------X-------");
+    });
+  })
+    Image.update({ id:'GB9589'},
+      {
+        invnr: obj.invnr,
+        color:obj.color,
+        fullpath:obj.fullpath,
+        size:obj.size
+      } ,{ multi: true },
+      function (err, numberAffected) {
+        if (err) {
+          console.log(err);
+        }
+        console.log("did op");
+        console.log(numberAffected);
+        console.log("-- op");
+      }
+    );
+  });
+  Image.create(main, function(err) {
+    console.log("in create ..");
+    if(err){
+      console.log("err");
+      console.log(err);
+      res.send(err);
+    } else {
+      console.log(JSONObj);
+      //res.json(JSONObj);
+    }
+  });
+  */
+  console.log(" cr odne");
+  return res.status(200);
+  res.redirect('/');
+
+})
+
+module.exports = router;
